@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spletno mesto</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            text-align: center;
+        }
+        .hidden { display: none; }
+        .menu {
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            left: 0;
+        }
+        .menu button {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .container { margin-top: 50px; padding: 20px; }
+        .modal {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.3);
+            z-index: 10;
+            width: 300px;
+        }
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 5;
+        }
+        table {
+            width: 60%;
+            margin: auto;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid black;
+            padding: 10px;
+            text-align: left;
+        }
+        .legend {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            font-size: 14px;
+            background: white;
+            padding: 5px;
+        }
+        .green { color: green; font-weight: bold; }
+        .black { color: black; font-weight: bold; }
+        .red { color: red; font-weight: bold; }
+        .tooltip {
+            position: absolute;
+            background: white;
+            border: 1px solid black;
+            padding: 5px;
+            display: none;
+            font-size: 12px;
+            box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div id="login-screen">
+        <h2>Prijava</h2>
+        <input type="text" id="username" placeholder="Uporabniško ime"><br><br>
+        <input type="password" id="password" placeholder="Geslo"><br><br>
+        <button onclick="login()">Prijava</button>
+    </div>
+
+    <div id="main-content" class="hidden">
+        <div class="menu">
+            <button onclick="showHome()">DOMOV</button>
+            <button onclick="openGroupModal()">SKUPINE</button>
+            <button onclick="logout()">ODJAVA</button>
+        </div>
+        <div class="container" id="home-page"></div>
+    </div>
+
+    <div id="group-modal" class="modal hidden">
+        <h3>Izberi skupino</h3>
+        <button onclick="showGroup('ANIMATORJI ZA BIRMANCE', ['Brina', 'Dominik', 'Ema', 'Eva', 'Gal', 'Jaša', 'Julija', 'Nika', 'Liza', 'Maks', 'Miha', 'Neja', 'Nika R', 'Pia', 'Polona', 'Samo', 'Jošt', 'Lori'])">ANIMATORJI ZA BIRMANCE</button><br><br>
+        <button onclick="closeGroupModal()">Zapri</button>
+    </div>
+
+    <div id="grade-modal" class="modal hidden">
+        <h3>Vpis ocene</h3>
+        <p><strong>Oceno vpisal:</strong> <span id="grader-name"></span></p>
+        <p><strong>Datum:</strong> <span id="grade-date"></span></p>
+        <p><strong>Tip:</strong>
+            <select id="grade-type">
+                <option value="POHVALA">POHVALA</option>
+                <option value="PRIPOMBA">PRIPOMBA</option>
+                <option value="KOMENTAR">KOMENTAR</option>
+            </select>
+        </p>
+        <p><strong>Opis:</strong> <textarea id="grade-description"></textarea></p>
+        <p><strong>Ocena:</strong></p>
+        <div id="grade-buttons">
+            <button onclick="selectGrade(1)">1</button>
+            <button onclick="selectGrade(2)">2</button>
+            <button onclick="selectGrade(3)">3</button>
+            <button onclick="selectGrade(4)">4</button>
+            <button onclick="selectGrade(5)">5</button>
+        </div>
+        <p>Izbrana ocena: <strong id="selected-grade">-</strong></p>
+        <button onclick="saveGrade()">SHRANI</button>
+    </div>
+
+    <div class="legend">
+        <p class="green">POHVALA</p>
+        <p class="black">KOMENTAR</p>
+        <p class="red">PRIPOMBA</p>
+    </div>
+
+    <script>
+        const users = {
+            "ADMIN": { password: "ADMIN", name: "Administrator" },
+            "jp09": { password: "Jaša Petrinjak", name: "Jaša Petrinjak" },
+            "jb09": { password: "Julija Brilej", name: "Julija Brilej" }
+        };
+
+        let currentUser = null;
+        let currentCell = null;
+        let currentGroup = null;
+
+        // Function to load saved grades from localStorage
+        function loadSavedData(groupName) {
+            let savedData = localStorage.getItem(groupName);
+            if (savedData) {
+                return JSON.parse(savedData);
+            }
+            return [];
+        }
+
+        // Function to save grades to localStorage
+        function saveData(groupName, data) {
+            localStorage.setItem(groupName, JSON.stringify(data));
+        }
+
+        function login() {
+            var user = document.getElementById("username").value;
+            var pass = document.getElementById("password").value;
+            if (users[user] && users[user].password === pass) {
+                currentUser = users[user].name;
+                document.getElementById("login-screen").classList.add("hidden");
+                document.getElementById("main-content").classList.remove("hidden");
+                document.getElementById("username").value = "";
+                document.getElementById("password").value = "";
+            } else {
+                alert("Napačno uporabniško ime ali geslo!");
+            }
+        }
+
+        function logout() {
+            document.getElementById("login-screen").classList.remove("hidden");
+            document.getElementById("main-content").classList.add("hidden");
+            document.getElementById("password").value = "";
+        }
+
+        function showHome() {
+            document.getElementById("home-page").innerHTML = "";
+        }
+
+        function openGroupModal() {
+            document.getElementById("group-modal").classList.remove("hidden");
+        }
+
+        function closeGroupModal() {
+            document.getElementById("group-modal").classList.add("hidden");
+        }
+
+        function showGroup(groupName, members) {
+            currentGroup = groupName;
+            closeGroupModal();
+            let content = `<h2>${groupName}</h2><table><tr><th>Ime</th><th>Ocena</th></tr>`;
+            let savedData = loadSavedData(groupName);
+            members.forEach(member => {
+                let memberData = savedData.find(item => item.name === member);
+                content += `<tr><td>${member}</td><td onclick="openGradeModal(this, '${member}')">${memberData ? memberData.grades : ''}</td></tr>`;
+            });
+            content += "</table>";
+            document.getElementById("home-page").innerHTML = content;
+        }
+
+        function openGradeModal(cell, member) {
+            currentCell = cell;
+            document.getElementById("grader-name").innerText = currentUser;
+            document.getElementById("grade-date").innerText = new Date().toLocaleDateString();
+            document.getElementById("grade-modal").classList.remove("hidden");
+            currentCell.setAttribute("data-member", member);
+        }
+
+        function selectGrade(grade) {
+            document.getElementById("selected-grade").innerText = grade;
+        }
+
+        function saveGrade() {
+            let grade = document.getElementById("selected-grade").innerText;
+            if (grade === "-") return alert("Izberi oceno!");
+            let type = document.getElementById("grade-type").value;
+            let color = type === "POHVALA" ? "green" : type === "PRIPOMBA" ? "red" : "black";
+            
+            let member = currentCell.getAttribute("data-member");
+            let savedData = loadSavedData(currentGroup);
+            let memberData = savedData.find(item => item.name === member);
+            if (!memberData) {
+                memberData = { name: member, grades: [] };
+                savedData.push(memberData);
+            }
+            memberData.grades.push(`<span class="${color}" title="Vpisal: ${currentUser}, ${new Date().toLocaleDateString()}"><strong>${grade}</strong></span>`);
+            saveData(currentGroup, savedData);
+            currentCell.innerHTML = memberData.grades.join(" ");
+            document.getElementById("grade-modal").classList.add("hidden");
+        }
+
+        // Tooltip
+        document.body.addEventListener("mousemove", function(event) {
+            if (event.target && event.target.tagName === 'SPAN') {
+                let tooltip = document.getElementById("tooltip");
+                tooltip.style.display = 'block';
+                tooltip.style.left = event.pageX + 10 + 'px';
+                tooltip.style.top = event.pageY + 10 + 'px';
+                tooltip.innerHTML = event.target.title;
+            }
+        });
+
+        document.body.addEventListener("mouseout", function(event) {
+            if (event.target && event.target.tagName === 'SPAN') {
+                document.getElementById("tooltip").style.display = 'none';
+            }
+        });
+    </script>
+
+    <div id="tooltip" class="tooltip"></div>
+</body>
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
