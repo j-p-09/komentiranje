@@ -66,7 +66,7 @@
         }
         .legend {
             position: fixed;
-            bottom: 10px;
+            bottom: 30px;
             left: 10px;
             font-size: 14px;
             background: white;
@@ -83,6 +83,19 @@
             display: none;
             font-size: 12px;
             box-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+        }
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #333;
+            color: white;
+            padding: 10px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
     </style>
 </head>
@@ -131,6 +144,7 @@
         </div>
         <p>Izbrana ocena: <strong id="selected-grade">-</strong></p>
         <button onclick="saveGrade()">SHRANI</button>
+        <button onclick="closeGradeModal()">Zapri</button>
     </div>
 
     <div class="legend">
@@ -138,6 +152,12 @@
         <p class="black">KOMENTAR</p>
         <p class="red">PRIPOMBA</p>
     </div>
+
+    <footer>
+        <div>Stran še v nastajanju</div>
+        <div>Verzija 1.1</div>
+        <div id="response-time">Čas prijave: <span id="remaining-time">180</span> sekund</div>
+    </footer>
 
     <script>
         const users = {
@@ -149,6 +169,8 @@
         let currentUser = null;
         let currentCell = null;
         let currentGroup = null;
+        let loginTime = null;
+        let timerInterval = null;
 
         // Function to load saved grades from localStorage
         function loadSavedData(groupName) {
@@ -173,6 +195,8 @@
                 document.getElementById("main-content").classList.remove("hidden");
                 document.getElementById("username").value = "";
                 document.getElementById("password").value = "";
+                loginTime = Date.now();
+                startTimer();
             } else {
                 alert("Napačno uporabniško ime ali geslo!");
             }
@@ -182,6 +206,7 @@
             document.getElementById("login-screen").classList.remove("hidden");
             document.getElementById("main-content").classList.add("hidden");
             document.getElementById("password").value = "";
+            clearInterval(timerInterval);
         }
 
         function showHome() {
@@ -240,6 +265,22 @@
             document.getElementById("grade-modal").classList.add("hidden");
         }
 
+        function closeGradeModal() {
+            document.getElementById("grade-modal").classList.add("hidden");
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                let timeLeft = 180 - Math.floor((Date.now() - loginTime) / 1000);
+                document.getElementById("remaining-time").innerText = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerInterval);
+                    alert("Čas za prijavo je potekel. Odjavljeni ste.");
+                    logout();
+                }
+            }, 1000);
+        }
+
         // Tooltip
         document.body.addEventListener("mousemove", function(event) {
             if (event.target && event.target.tagName === 'SPAN') {
@@ -261,24 +302,3 @@
     <div id="tooltip" class="tooltip"></div>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
