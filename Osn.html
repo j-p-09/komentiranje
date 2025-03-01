@@ -162,8 +162,6 @@
     <script>
         const users = {
             "ADMIN": { password: "ADMIN", name: "Administrator" },
-            "ns09": {password: "Neja Stvarnik", name: "Neja Stvarnik"},
-            "pp09": {password: "Pia Pečnik", name: "Pia Pečnik"},
             "jp09": { password: "Jaša Petrinjak", name: "Jaša Petrinjak" },
             "jb09": { password: "Julija Brilej", name: "Julija Brilej" }
         };
@@ -226,49 +224,16 @@
         function showGroup(groupName, members) {
             currentGroup = groupName;
             closeGroupModal();
-            let content = `<h2>${groupName}</h2><table><tr><th>Ime</th><th>Ocena</th></tr>`;
+            let content = `<h2>${groupName}</h2>`;
+            content += `<p style="color: red;">Zaradi prenove spletnega mesta in API povezave na FBCK trenutno ni mogoče vpisovati mnenja.</p>`;
+            content += `<table><tr><th>Ime</th><th>Ocena</th></tr>`;
             let savedData = loadSavedData(groupName);
             members.forEach(member => {
                 let memberData = savedData.find(item => item.name === member);
-                content += `<tr><td>${member}</td><td onclick="openGradeModal(this, '${member}')">${memberData ? memberData.grades : ''}</td></tr>`;
+                content += `<tr><td>${member}</td><td>${memberData ? memberData.grades : ''}</td></tr>`;
             });
             content += "</table>";
             document.getElementById("home-page").innerHTML = content;
-        }
-
-        function openGradeModal(cell, member) {
-            currentCell = cell;
-            document.getElementById("grader-name").innerText = currentUser;
-            document.getElementById("grade-date").innerText = new Date().toLocaleDateString();
-            document.getElementById("grade-modal").classList.remove("hidden");
-            currentCell.setAttribute("data-member", member);
-        }
-
-        function selectGrade(grade) {
-            document.getElementById("selected-grade").innerText = grade;
-        }
-
-        function saveGrade() {
-            let grade = document.getElementById("selected-grade").innerText;
-            if (grade === "-") return alert("Izberi oceno!");
-            let type = document.getElementById("grade-type").value;
-            let color = type === "POHVALA" ? "green" : type === "PRIPOMBA" ? "red" : "black";
-            
-            let member = currentCell.getAttribute("data-member");
-            let savedData = loadSavedData(currentGroup);
-            let memberData = savedData.find(item => item.name === member);
-            if (!memberData) {
-                memberData = { name: member, grades: [] };
-                savedData.push(memberData);
-            }
-            memberData.grades.push(`<span class="${color}" title="Vpisal: ${currentUser}, ${new Date().toLocaleDateString()}"><strong>${grade}</strong></span>`);
-            saveData(currentGroup, savedData);
-            currentCell.innerHTML = memberData.grades.join(" ");
-            document.getElementById("grade-modal").classList.add("hidden");
-        }
-
-        function closeGradeModal() {
-            document.getElementById("grade-modal").classList.add("hidden");
         }
 
         function startTimer() {
@@ -300,6 +265,10 @@
             }
         });
     </script>
+
+    <div id="tooltip" class="tooltip"></div>
+</body>
+</html>
 
     <div id="tooltip" class="tooltip"></div>
 </body>
