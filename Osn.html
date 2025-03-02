@@ -228,9 +228,26 @@
             content += `<p style="color: red;">Zaradi prenove spletnega mesta in API povezave na FBCK trenutno ni mogoče vpisovati mnenja.</p>`;
             content += `<table><tr><th>Ime</th><th>Ocena</th></tr>`;
             let savedData = loadSavedData(groupName);
-            members.forEach(member => {
-                let memberData = savedData.find(item => item.name === member);
-                content += `<tr><td>${member}</td><td>${memberData ? memberData.grades : ''}</td></tr>`;
+            <tr><th>Brina</th><th><b>4 4</b></th><tr>
+            <tr><th>Dominik</th><th><b>2 3</b></th><tr>
+            <tr><th>Ema</th><th><b><green>5</green> 4</b></th><tr>
+            <tr><th>Eva</th><th><b><green>5 </green><red>5</red><green> 5</green></b></th><tr>
+                <tr><th>Gal</th><th><b>3 3</b></th><tr>
+            <tr><th>Jaša</th><th><b><green>5</green></b></th><tr>
+                <tr><th>Julija</th><th><b>5</b></th><tr>
+            <tr><th>Nika</th><th><b>4 3</b></th><tr>
+            <tr><th>Liza</th><th><b><red>3 2 1</red></b></th><tr>
+                <tr><th>Brina</th><th><b>4 4</b></th><tr>
+            <tr><th>Maks</th><th><b>2 3</b></th><tr>
+            <tr><th>Miha</th><th><b><green>4 5</green></b></th><tr>
+            <tr><th>Neja</th><th><b>4 <green>5</green></b></th><tr>
+                <tr><th>Nika R</th><th><b><green>5 3</green></b></th><tr>
+                <tr><th>Pia</th><th><b><green>5 5</green></b></th><tr>
+                <tr><th>Polona</th><th><b>4 <green>5</greeen></b></th><tr>
+                <tr><th>Samo</th><th><b>3 4</b></th><tr>
+            <tr><th>Jošt</th><th><b>3 3</b></th><tr>
+            <tr><th>Lori</th><th><b><red>2 2</red></b></th><tr>
+            
             });
             content += "</table>";
             document.getElementById("home-page").innerHTML = content;
